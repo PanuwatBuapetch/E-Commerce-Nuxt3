@@ -111,26 +111,34 @@
 
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
-// Import Interface ที่เราสร้างไว้ใน Store มาใช้ (ถ้าขึ้นแดงใน Editor ให้ตั้งค่า path หรือใส่ type any ชั่วคราวได้ครับ)
-import type { CartItem } from '~/stores/cart' 
 
 const cartStore = useCartStore()
 
 // ฟังก์ชันเพิ่มจำนวน
-const increaseQty = (item: CartItem) => {
-  // สมมติว่าไม่ให้ซื้อเกินสต็อก
-  if (item.quantity < item.stock) {
+const increaseQty = (item: any) => {
+  // ตรวจสอบสต็อก (ถ้าใน DB เป็น Number ให้ใช้ได้เลย ถ้าเป็น String ให้ใส่ Number() ครอบ)
+  const currentStock = Number(item.stock) || 999; 
+  if (item.quantity < currentStock) {
     cartStore.updateQuantity(item.id, item.quantity + 1)
+  } else {
+    alert('ขออภัย สินค้าในสต็อกไม่พอ')
   }
 }
 
 // ฟังก์ชันลดจำนวน
-const decreaseQty = (item: CartItem) => {
+const decreaseQty = (item: any) => {
   if (item.quantity > 1) {
     cartStore.updateQuantity(item.id, item.quantity - 1)
   } else {
-    // ถ้าเหลือ 1 แล้วกดลดอีก ให้ลบออกจากตะกร้าเลย
-    cartStore.removeFromCart(item.id)
+    // ถ้าเหลือ 1 แล้วกดลด ให้ถามเพื่อความแน่ใจก่อนลบ
+    if (confirm('ต้องการลบสินค้าชิ้นนี้ออกจากตะกร้าหรือไม่?')) {
+      cartStore.removeFromCart(item.id)
+    }
   }
+}
+
+// ตรวจสอบค่าตัวเลขก่อนคำนวณใน Template
+const calculateTotal = (price: any, qty: number) => {
+  return (Number(price) * qty).toLocaleString()
 }
 </script>
