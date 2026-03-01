@@ -1,60 +1,77 @@
 import { defineStore } from 'pinia'
 
-// 1. สร้าง Interface เพื่อกำหนดโครงสร้างของข้อมูลสินค้า
+// 1. กำหนด Interface ให้ชัดเจน
 export interface Product {
   id: number
   name: string
-  price: number
+  price: number | string 
   stock: number
   image: string
 }
 
-// 2. สร้าง Interface สำหรับสินค้าในตะกร้า (สืบทอดจาก Product แล้วเพิ่ม quantity)
 export interface CartItem extends Product {
   quantity: number
 }
 
 export const useCartStore = defineStore('cart', {
-  // 3. ระบุ Type ให้กับ items ใน State ว่าเป็น Array ของ CartItem
   state: () => ({
-    items: [] as CartItem[]
+    // แก้ไข Error 'process': ใช้ import.meta.client แทนตามมาตรฐาน Nuxt 3
+    items: (import.meta.client && localStorage.getItem('cart_items')) 
+      ? JSON.parse(localStorage.getItem('cart_items')!) 
+      : [] as CartItem[]
   }),
   
   getters: {
     totalPrice: (state) => {
-      return state.items.reduce((total, item) => total + (item.price * item.quantity), 0)
+      // ระบุ (total: number, item: CartItem)
+      return state.items.reduce((total: number, item: CartItem) => {
+        return total + (Number(item.price) * item.quantity)
+      }, 0) // อย่าลืมใส่เลข 0 เป็นค่าเริ่มต้นตรงนี้ด้วย
     },
     totalItems: (state) => {
-      return state.items.reduce((total, item) => total + item.quantity, 0)
+      // ระบุ (total: number, item: CartItem)
+      return state.items.reduce((total: number, item: CartItem) => {
+        return total + item.quantity
+      }, 0)
     }
   },
 
   actions: {
-    // ระบุ Type ให้ product เป็น Product
+    saveToLocal() {
+      if (import.meta.client) {
+        localStorage.setItem('cart_items', JSON.stringify(this.items))
+      }
+    },
+
     addToCart(product: Product) {
-      const existingItem = this.items.find(item => item.id === product.id)
+      // ระบุ Type (item: CartItem) เพื่อแก้ Error 'implicitly any'
+      const existingItem = this.items.find((item: CartItem) => item.id === product.id)
       if (existingItem) {
         existingItem.quantity++
       } else {
         this.items.push({ ...product, quantity: 1 })
       }
+      this.saveToLocal()
     },
     
-    // ระบุ Type ให้ productId เป็น number
     removeFromCart(productId: number) {
-      this.items = this.items.filter(item => item.id !== productId)
+      this.items = this.items.filter((item: CartItem) => item.id !== productId)
+      this.saveToLocal()
     },
 
-    // ระบุ Type ให้ productId และ quantity เป็น number
     updateQuantity(productId: number, quantity: number) {
-      const item = this.items.find(item => item.id === productId)
+      const item = this.items.find((item: CartItem) => item.id === productId)
       if (item && quantity > 0) {
         item.quantity = quantity
       }
+      this.saveToLocal()
     },
 
     clearCart() {
       this.items = []
+      if (import.meta.client) {
+        localStorage.removeItem('cart_items')
+      }
     }
   }
 })

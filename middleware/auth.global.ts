@@ -1,15 +1,16 @@
 import { useAuthStore } from '~/stores/auth'
 
 export default defineNuxtRouteMiddleware((to, from) => {
-  const authStore = useAuthStore()
+  const token = useCookie('auth_token')
+  const isAuthenticated = !!token.value
 
-  // ปล่อยให้เข้าหน้า Login กับ Register ได้ปกติ
-  if (to.path === '/auth/login' || to.path === '/auth/register') {
-    return
+  // 1. ถ้า Login แล้ว ห้ามกลับไปหน้า Login/Register
+  if (isAuthenticated && (to.path === '/auth/login' || to.path === '/auth/register')) {
+    return navigateTo('/')
   }
 
-  // ถ้าจะไปหน้าอื่น แล้วยังไม่ได้ Login -> เตะไปหน้า Login
-  if (!authStore.isAuthenticated) {
+  // 2. ถ้ายังไม่ Login ห้ามเข้าหน้าอื่นที่ต้องการสิทธิ์ (ยกเว้นหน้า login/register)
+  if (!isAuthenticated && to.path !== '/auth/login' && to.path !== '/auth/register') {
     return navigateTo('/auth/login')
   }
 })

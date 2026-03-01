@@ -14,7 +14,23 @@
         หน้าแรก
       </v-btn>
 
-      <v-btn to="/history" variant="text" prepend-icon="mdi-clipboard-text-clock-outline">
+      <v-btn 
+        v-if="authStore.isAuthenticated && authStore.user?.role === 'admin'" 
+        to="/admin/orders" 
+        variant="text" 
+        color="yellow-accent-2"
+        class="font-weight-bold"
+        prepend-icon="mdi-shield-check"
+      >
+        จัดการระบบ
+      </v-btn>
+
+      <v-btn 
+        v-if="authStore.isAuthenticated"
+        to="/history" 
+        variant="text" 
+        prepend-icon="mdi-clipboard-text-clock-outline"
+      >
         ประวัติสั่งซื้อ
       </v-btn>
 
@@ -34,7 +50,10 @@
 
       <div v-if="authStore.isAuthenticated" class="d-flex align-center ml-2">
         <v-icon size="large" class="mr-2">mdi-account-circle</v-icon>
-        <span class="mr-4 font-weight-medium text-white">{{ authStore.user?.email }}</span>
+        <div class="d-flex flex-column mr-4">
+          <span class="text-caption leading-none text-grey-lighten-2">{{ authStore.user?.role }}</span>
+          <span class="font-weight-medium text-white">{{ authStore.user?.name }}</span>
+        </div>
         
         <v-btn @click="handleLogout" variant="tonal" color="white" prepend-icon="mdi-logout" size="small">
           ออกจากระบบ
@@ -51,7 +70,6 @@
       <slot /> 
     </v-main>
   </div>
-  
 </template>
 
 <script setup>
