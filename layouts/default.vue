@@ -14,6 +14,7 @@
         หน้าแรก
       </v-btn>
 
+<<<<<<< HEAD
       <template v-if="authStore.isAdmin">
         <v-btn to="/admin/products/add" variant="text" color="yellow-lighten-3" prepend-icon="mdi-plus-box">
           เพิ่มสินค้า (Admin)
@@ -24,6 +25,25 @@
       </template>
 
       <v-btn v-if="authStore.isAuthenticated" to="/history" variant="text" prepend-icon="mdi-clipboard-text-clock-outline">
+=======
+      <v-btn 
+        v-if="authStore.isAuthenticated && authStore.user?.role === 'admin'" 
+        to="/admin/orders" 
+        variant="text" 
+        color="yellow-accent-2"
+        class="font-weight-bold"
+        prepend-icon="mdi-shield-check"
+      >
+        จัดการระบบ
+      </v-btn>
+
+      <v-btn 
+        v-if="authStore.isAuthenticated"
+        to="/history" 
+        variant="text" 
+        prepend-icon="mdi-clipboard-text-clock-outline"
+      >
+>>>>>>> 6828f68c6325b0c8b86278e1ad390fcadd85dd28
         ประวัติสั่งซื้อ
       </v-btn>
 
@@ -43,12 +63,19 @@
 
       <div v-if="authStore.isAuthenticated" class="d-flex align-center ml-2">
         <v-icon size="large" class="mr-2">mdi-account-circle</v-icon>
+<<<<<<< HEAD
         <span class="mr-4 font-weight-medium text-white">
           {{ authStore.user?.email }} 
           <v-chip size="x-small" :color="authStore.isAdmin ? 'amber' : 'green'" class="ml-1 text-uppercase">
             {{ authStore.user?.role }}
           </v-chip>
         </span>
+=======
+        <div class="d-flex flex-column mr-4">
+          <span class="text-caption leading-none text-grey-lighten-2">{{ authStore.user?.role }}</span>
+          <span class="font-weight-medium text-white">{{ authStore.user?.name }}</span>
+        </div>
+>>>>>>> 6828f68c6325b0c8b86278e1ad390fcadd85dd28
         
         <v-btn @click="handleLogout" variant="tonal" color="white" prepend-icon="mdi-logout" size="small">
           ออกจากระบบ
