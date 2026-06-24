@@ -14,7 +14,16 @@
         หน้าแรก
       </v-btn>
 
-      <v-btn to="/history" variant="text" prepend-icon="mdi-clipboard-text-clock-outline">
+      <template v-if="authStore.isAdmin">
+        <v-btn to="/admin/products/add" variant="text" color="yellow-lighten-3" prepend-icon="mdi-plus-box">
+          เพิ่มสินค้า (Admin)
+        </v-btn>
+        <v-btn to="/admin/orders" variant="text" color="yellow-lighten-3" prepend-icon="mdi-cog">
+          จัดการออเดอร์ (Admin)
+        </v-btn>
+      </template>
+
+      <v-btn v-if="authStore.isAuthenticated" to="/history" variant="text" prepend-icon="mdi-clipboard-text-clock-outline">
         ประวัติสั่งซื้อ
       </v-btn>
 
@@ -34,7 +43,12 @@
 
       <div v-if="authStore.isAuthenticated" class="d-flex align-center ml-2">
         <v-icon size="large" class="mr-2">mdi-account-circle</v-icon>
-        <span class="mr-4 font-weight-medium text-white">{{ authStore.user?.email }}</span>
+        <span class="mr-4 font-weight-medium text-white">
+          {{ authStore.user?.email }} 
+          <v-chip size="x-small" :color="authStore.isAdmin ? 'amber' : 'green'" class="ml-1 text-uppercase">
+            {{ authStore.user?.role }}
+          </v-chip>
+        </span>
         
         <v-btn @click="handleLogout" variant="tonal" color="white" prepend-icon="mdi-logout" size="small">
           ออกจากระบบ
@@ -51,20 +65,18 @@
       <slot /> 
     </v-main>
   </div>
-  
 </template>
 
 <script setup>
 import { useCartStore } from '~/stores/cart'
-import { useAuthStore } from '~/stores/auth' // ดึง Auth Store มาใช้เช็คสิทธิ์
+import { useAuthStore } from '~/stores/auth'
 
 const cartStore = useCartStore()
 const authStore = useAuthStore()
 
-// ฟังก์ชันสำหรับกดปุ่มออกจากระบบ
 const handleLogout = async () => {
-  authStore.logout() // เคลียร์สถานะใน Pinia ให้กลายเป็น false
-  cartStore.clearCart() // (Option) ล้างตะกร้าสินค้าด้วยเพื่อความปลอดภัย
-  await navigateTo('/auth/login') // เตะกลับไปหน้า Login
+  authStore.logout() 
+  cartStore.clearCart() 
+  await navigateTo('/auth/login') 
 }
 </script>

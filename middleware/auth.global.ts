@@ -1,15 +1,17 @@
 import { useAuthStore } from '~/stores/auth'
 
+// middleware/auth.global.ts
 export default defineNuxtRouteMiddleware((to, from) => {
-  const authStore = useAuthStore()
+  // อ่านจากคุกกี้ตรงๆ เพื่อความแม่นยำสูงสุดฝั่ง Server และ Client
+  const token = useCookie('auth_token').value
 
-  // ปล่อยให้เข้าหน้า Login กับ Register ได้ปกติ
-  if (to.path === '/auth/login' || to.path === '/auth/register') {
-    return
+  // ถ้าไม่มี token และจะไปหน้าอื่นที่ไม่ใช่หน้าล็อกอิน/สมัครสมาชิก -> ให้ดีดไป login
+  if (!token && !to.path.startsWith('/auth')) {
+    return navigateTo('/auth/login')
   }
 
-  // ถ้าจะไปหน้าอื่น แล้วยังไม่ได้ Login -> เตะไปหน้า Login
-  if (!authStore.isAuthenticated) {
-    return navigateTo('/auth/login')
+  // ถ้ามี token อยู่แล้ว แต่ดันทะลึ่งจะเปิดหน้า login -> ดีดไปหน้าแรก
+  if (token && to.path.startsWith('/auth')) {
+    return navigateTo('/')
   }
 })

@@ -1,74 +1,124 @@
 <template>
-  <v-container>
-    <h2 class="text-h4 font-weight-bold mb-6 mt-4">💳 ยืนยันการสั่งซื้อ</h2>
+  <v-container class="my-5">
+    <h1 class="text-h4 font-weight-bold mb-6">ชำระเงินและยืนยันคำสั่งซื้อ</h1>
 
-    <v-card v-if="cartStore.items.length === 0" class="text-center py-12" elevation="2">
-      <v-icon size="80" color="warning">mdi-alert-circle-outline</v-icon>
-      <h3 class="text-h5 mt-4">ไม่มีสินค้าให้ทำรายการ</h3>
-      <v-btn color="primary" class="mt-4" to="/">กลับไปเลือกสินค้า</v-btn>
-    </v-card>
+    <v-row v-if="cartStore.items.length === 0">
+      <v-col cols="12" class="text-center py-10">
+        <v-icon size="64" color="grey-lighten-1">mdi-cart-outline</v-icon>
+        <p class="text-h6 text-grey mt-3">ไม่มีสินค้าในตะกร้าช็อปปิ้งของคุณในขณะนี้</p>
+        <v-btn color="primary" class="mt-4" to="/">กลับไปเลือกซื้อเครื่องดนตรี</v-btn>
+      </v-col>
+    </v-row>
 
     <v-row v-else>
-      <v-col cols="12" md="8">
-        <v-card elevation="2" class="pa-5 mb-4" rounded="lg">
-          <h3 class="text-h6 font-weight-bold mb-4">📍 ข้อมูลการจัดส่ง</h3>
+      <v-col cols="12" md="7">
+        <v-card class="pa-5 mb-4" elevation="2" rounded="lg">
+          <v-card-title class="text-h6 font-weight-bold px-0 pt-0">
+            <v-icon left color="primary" class="mr-2">mdi-truck-delivery-outline</v-icon>
+            ข้อมูลสถานที่จัดส่งสินค้า
+          </v-card-title>
+          <v-divider class="mb-4"></v-divider>
+
           <v-form ref="formRef" v-model="isFormValid">
-            <v-row>
-              <v-col cols="12" sm="6">
-                <v-text-field v-model="shipping.name" label="ชื่อ-นามสกุล" variant="outlined"
-                  :rules="[v => !!v || 'กรุณากรอกชื่อ']" density="comfortable"></v-text-field>
-              </v-col>
-              <v-col cols="12" sm="6">
-                <v-text-field v-model="shipping.phone" label="เบอร์โทรศัพท์" variant="outlined"
-                  :rules="[v => !!v || 'กรุณากรอกเบอร์โทรศัพท์']" density="comfortable"></v-text-field>
-              </v-col>
-              <v-col cols="12">
-                <v-textarea v-model="shipping.address" label="ที่อยู่จัดส่งโดยละเอียด" variant="outlined" rows="3"
-                  :rules="[v => !!v || 'กรุณากรอกที่อยู่']"></v-textarea>
-              </v-col>
-            </v-row>
+            <v-text-field
+              v-model="shipping.name"
+              label="ชื่อ-นามสกุล ผู้รับสินค้า"
+              variant="outlined"
+              density="comfortable"
+              :rules="[v => !!v || 'กรุณากรอกชื่อผู้รับ']"
+              class="mb-2"
+            ></v-text-field>
+
+            <v-text-field
+              v-model="shipping.phone"
+              label="เบอร์โทรศัพท์ติดต่อ"
+              variant="outlined"
+              density="comfortable"
+              :rules="[
+                v => !!v || 'กรุณากรอกเบอร์โทรศัพท์',
+                v => /^[0-9]{10}$/.test(v) || 'กรุณากรอกเบอร์โทรศัพท์ให้ครบ 10 หลัก'
+              ]"
+              class="mb-2"
+            ></v-text-field>
+
+            <v-textarea
+              v-model="shipping.address"
+              label="ที่อยู่สำหรับจัดส่ง (บ้านเลขที่, ตำบล, อำเภอ, จังหวัด)"
+              variant="outlined"
+              density="comfortable"
+              rows="3"
+              :rules="[v => !!v || 'กรุณากรอกที่อยู่จัดส่ง']"
+            ></v-textarea>
           </v-form>
         </v-card>
 
-        <v-card elevation="2" class="pa-5" rounded="lg">
-          <h3 class="text-h6 font-weight-bold mb-4">💰 วิธีการชำระเงิน</h3>
-          <v-radio-group v-model="paymentMethod" color="primary">
-            <v-radio label="โอนเงินผ่านธนาคาร (QR PromptPay)" value="promptpay"></v-radio>
-            <v-radio label="บัตรเครดิต / เดบิต" value="credit_card"></v-radio>
-            <v-radio label="เก็บเงินปลายทาง (COD)" value="cod"></v-radio>
+        <v-card class="pa-5" elevation="2" rounded="lg">
+          <v-card-title class="text-h6 font-weight-bold px-0 pt-0">
+            <v-icon left color="primary" class="mr-2">mdi-credit-card-outline</v-icon>
+            เลือกช่องทางการชำระเงิน
+          </v-card-title>
+          <v-divider class="mb-4"></v-divider>
+
+          <v-radio-group v-model="paymentMethod" inline>
+            <v-radio label="โอนเงินผ่าน PromptPay" value="promptpay" color="primary" class="mr-4"></v-radio>
+            <v-radio label="เก็บเงินปลายทาง (COD)" value="cod" color="primary"></v-radio>
           </v-radio-group>
         </v-card>
       </v-col>
 
-      <v-col cols="12" md="4">
-        <v-card elevation="2" class="pa-5 position-sticky" style="top: 20px;" rounded="lg">
-          <h3 class="text-h6 font-weight-bold mb-4">สรุปคำสั่งซื้อ</h3>
+      <v-col cols="12" md="5">
+        <v-card class="pa-5" elevation="2" rounded="lg" color="grey-lighten-5">
+          <v-card-title class="text-h6 font-weight-bold px-0 pt-0">
+            สรุปรายการสั่งซื้อ
+          </v-card-title>
+          <v-divider class="mb-4"></v-divider>
 
-          <v-list density="compact" class="mb-4">
-            <v-list-item v-for="item in cartStore.items" :key="item.id" class="px-0">
-              <v-list-item-title class="text-body-2">
-                {{ item.name }} <span class="text-grey">(x{{ item.quantity }})</span>
+          <v-list bg-color="transparent" class="pa-0">
+            <v-list-item
+              v-for="item in cartStore.items"
+              :key="item.id"
+              class="px-0 py-2 border-b-sm"
+            >
+              <template v-slot:prepend>
+                <v-avatar rounded="md" size="50" class="mr-3 bg-white" border>
+                  <v-img :src="item.image"></v-img>
+                </v-avatar>
+              </template>
+
+              <v-list-item-title class="font-weight-medium text-body-1">
+                {{ item.name }}
               </v-list-item-title>
+              <v-list-item-subtitle class="text-grey-darken-1 mt-1">
+                {{ Number(item.price).toLocaleString() }} บาท x {{ item.quantity }} ชิ้น
+              </v-list-item-subtitle>
+
               <template v-slot:append>
-                <div class="text-body-2 font-weight-bold">
-                  {{ (item.price * item.quantity).toLocaleString() }} ฿
-                </div>
+                <span class="font-weight-bold text-body-1 text-primary">
+                  {{ Number(item.price * item.quantity).toLocaleString() }}.-
+                </span>
               </template>
             </v-list-item>
           </v-list>
 
-          <v-divider class="mb-4"></v-divider>
-
-          <div class="d-flex justify-space-between mb-6 align-center">
-            <span class="text-subtitle-1">ยอดชำระสุทธิ</span>
-            <span class="text-h5 text-primary font-weight-black">
-              {{ cartStore.totalPrice.toLocaleString() }} ฿
+          <div class="d-flex justify-between align-center my-6">
+            <span class="text-h6 font-weight-medium">ยอดรวมสุทธิทั้งสิ้น:</span>
+            <span class="text-h5 font-weight-black text-primary">
+              {{ Number(cartStore.totalPrice).toLocaleString() }} บาท
             </span>
           </div>
 
-          <v-btn color="success" block size="x-large" prepend-icon="mdi-check-circle"
-            :disabled="!isFormValid || isProcessing" :loading="isProcessing" @click="confirmOrder">
-            ยืนยันคำสั่งซื้อ
+          <v-btn
+            color="success"
+            size="x-large"
+            block
+            rounded="lg"
+            elevation="2"
+            :loading="isProcessing"
+            :disabled="!isFormValid || isProcessing"
+            @click="confirmOrder"
+          >
+            <v-icon left class="mr-2">mdi-lock-check-outline</v-icon>
+            ยืนยันการชำระเงินสั่งซื้อ
           </v-btn>
         </v-card>
       </v-col>
@@ -77,7 +127,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue' // เพิ่ม onMounted เพื่อโหลดข้อมูลผู้ใช้
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '~/stores/cart'
 import { useAuthStore } from '~/stores/auth'
@@ -91,67 +141,62 @@ const isFormValid = ref(false)
 const isProcessing = ref(false)
 const formRef = ref(null)
 
-const shipping = ref({
-  name: '',
-  phone: '',
-  address: ''
-})
-
+const shipping = ref({ name: '', phone: '', address: '' })
 const paymentMethod = ref('promptpay')
 
-// ดึงข้อมูลชื่อจาก authStore มาใส่ในฟอร์มโดยอัตโนมัติ (ถ้ามี)
 onMounted(() => {
+  // มั่นใจว่าโหลดเซสชันผู้ใช้ขึ้นมาแล้ว
+  authStore.initAuth()
   if (authStore.user) {
     shipping.value.name = authStore.user.name || ''
   }
 })
 
 const confirmOrder = async () => {
-  // 1. ตรวจสอบความถูกต้องของฟอร์ม
   const { valid } = await formRef.value.validate()
   if (!valid) return
 
-  // 2. ตรวจสอบว่าผู้ใช้ Login อยู่หรือไม่ เพื่อป้องกัน userId เป็น NULL
-  if (!authStore.user?.id) {
-    alert('กรุณาเข้าสู่ระบบก่อนทำการสั่งซื้อ')
-    router.push('/login')
+  // 🚨 ตรวจสิทธิ์: ต้องล็อกอินจริงและต้องมี Token อยู่ในเครื่อง
+  const token = useCookie('auth_token').value || authStore.token
+  if (!token) {
+    alert('กรุณาเข้าสู่ระบบก่อนทำการสั่งซื้อสินค้า')
+    router.push('/auth/login')
     return
   }
 
   isProcessing.value = true
 
+  // 🟢 ส่งข้อมูลตามโครงสร้างใหม่ (ไม่ต้องแนบ userId ดิบไปแล้ว)
+  const orderData = {
+    total: cartStore.totalPrice,
+    customerName: shipping.value.name,
+    phone: shipping.value.phone,
+    address: shipping.value.address,
+    paymentMethod: paymentMethod.value,
+    items: cartStore.items.map(item => ({
+      productId: item.id, // ส่งไอดีสินค้าไปตัดสต็อก
+      quantity: item.quantity,
+      price: item.price
+    }))
+  }
+
   try {
-    // 3. เตรียมข้อมูลส่ง Backend โดยรวม userId: 4 เข้าไปด้วย
-    const orderData = {
-      userId: authStore.user?.id,
-      total: cartStore.totalPrice,
-      items: cartStore.items.map(item => ({
-        productId: item.id,
-        quantity: item.quantity,
-        price: item.price
-      })),
-      // 🟢 ข้อมูลที่ผู้ใช้กรอกในหน้าเว็บ
-      customerName: shipping.value.name,
-      phone: shipping.value.phone,
-      address: shipping.value.address,
-      paymentMethod: paymentMethod.value
-    }
+    // ยิงคำสั่งซื้อพร้อมยื่น Bearer Token ใน Headers
+    const response = await axios.post('http://localhost:3001/orders/checkout', orderData, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
 
-    console.log('ส่งข้อมูลการสั่งซื้อ:', orderData)
-
-    // 4. ยิง API ไปที่ NestJS
-    const response = await axios.post('http://localhost:3001/orders/checkout', orderData)
-
-    if (response.data) {
-      alert('สั่งซื้อสำเร็จ! เลขที่คำสั่งซื้อของคุณคือ: ORD-' + response.data.orderId.toString().padStart(4, '0'))
-
-      // 5. ล้างตะกร้าและไปหน้าประวัติ
-      cartStore.clearCart()
-      router.push('/history')
+    if (response.data.success) {
+      const displayId = response.data.orderId.toString().padStart(4, '0')
+      alert('สั่งซื้อสำเร็จ! เลขที่คำสั่งซื้อของคุณคือ: ORD-' + displayId)
+      
+      cartStore.clearCart() // ล้างตะกร้าฝั่งหน้าบ้าน
+      router.push('/history') // ดีดไปหน้าประวัติทันที
     }
   } catch (error) {
     console.error('Checkout error:', error.response?.data)
-    // แสดงข้อความ Error จริงจาก Backend เช่น "กรุณาส่ง userId มาด้วย" หรือ "สต็อกไม่พอ"
     alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการสั่งซื้อ')
   } finally {
     isProcessing.value = false

@@ -24,6 +24,8 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router' // 🟢 1. นำเข้า useRouter
+import axios from 'axios' // 🟢 2. นำเข้า axios (ถ้าไม่ได้ทำ auto-import ไว้)
 import { useAuthStore } from '~/stores/auth'
 
 definePageMeta({
@@ -31,24 +33,29 @@ definePageMeta({
 })
 
 const email = ref('')
-const password = ref('') // 🟢 เพิ่มตัวแปร password
+const password = ref('') 
 const authStore = useAuthStore()
+const router = useRouter() // 🟢 3. ประกาศใช้งาน router
 
 const handleLogin = async () => {
-  if (email.value && password.value) {
-    // 🟢 ส่งทั้ง email และ password ไปที่ store
-    const success = await authStore.login({
+  try {
+    // ยิง API ล็อกอินเข้าหลังบ้าน
+    const response = await axios.post('http://localhost:3001/auth/login', {
       email: email.value,
       password: password.value
     })
 
-    if (success) {
-      await navigateTo('/')
-    } else {
-      alert('Login ล้มเหลว กรุณาตรวจสอบข้อมูลอีกครั้ง')
+    if (response.data.success) {
+      // ส่ง Token และ User ไปเซฟลงคุกกี้ผ่าน Store ตัวใหม่
+      authStore.setUserSession(response.data.token, response.data.user)
+      
+      alert('เข้าสู่ระบบสำเร็จ!')
+      router.push('/') // 🟢 ตอนนี้จะสามารถเปลี่ยนหน้าได้ปกติแล้ว
     }
-  } else {
-    alert('กรุณากรอกข้อมูลให้ครบถ้วน')
+  } catch (error) {
+    console.error('Login error:', error)
+    // แสดงข้อความแจ้งเตือนความผิดพลาดจริงจากระบบหลังบ้าน
+    alert(error.response?.data?.message || 'เกิดข้อผิดพลาดในการเชื่อมต่อเซิร์ฟเวอร์')
   }
 }
 </script>
